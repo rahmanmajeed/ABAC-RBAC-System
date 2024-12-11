@@ -1,3 +1,6 @@
+const ActionQueryBuilder = require("./ActionQueryBuilder");
+const GrantBuilder = require("./GrantBuilder");
+
 class AccessControl {
   // private _grants = {};
   constructor(grants = {}) {
@@ -24,8 +27,17 @@ class AccessControl {
    * @param {string} role
    */
   grant(role) {
-    if(!this._grants[role]) this._grants[role] = {}
+    if (!this._grants[role]) this._grants[role] = {};
 
     return new GrantBuilder(this, role);
   }
+
+  /**
+   * Check if a role has access to an action on a resource
+   */
+  can(role) {
+    return new ActionQueryBuilder(this._grants, role);
+  }
 }
+
+module.exports = AccessControl;
