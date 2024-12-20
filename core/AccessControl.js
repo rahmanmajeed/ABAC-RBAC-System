@@ -3,8 +3,18 @@ const GrantBuilder = require("./GrantBuilder");
 
 class AccessControl {
   // private _grants = {};
-  constructor(grants = {}) {
-    this._grants = grants;
+  constructor(grants) {
+    if (arguments.length === 0) grants = { roles: [] }; // set default grants value on initialization
+    this._grants = null;
+    this._isLocked = false;
+    this.setGrants(grants);
+  }
+
+  /**
+   * Get isLocked
+   */
+  get isLocked() {
+    return this._isLocked && Object.isFrozen(this._grants);
   }
   /**
    * Get the current grants
@@ -19,9 +29,29 @@ class AccessControl {
    * @param {Object} grants
    */
   setGrants(grants) {
+    if (this.isLocked) throw new Error("AccessControl ERROR");
     this._grants = grants;
+    return this;
   }
 
+  /**
+   * Reset the grants Object
+   *
+   */
+  reset() {
+    if (this.isLocked) throw new Error("AccessControl ERROR");
+    this._grants = { roles: [] };
+    return this;
+  }
+
+  /**
+   * Lock the current Instance of AccessControl
+   *
+   */
+  lock() {
+    utils.lockAC(this);
+    return this;
+  }
   /**
    * Grant permissions to a role
    * @param {string} role
