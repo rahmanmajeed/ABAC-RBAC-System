@@ -1,3 +1,4 @@
+const AccessGrant = require("./AccessGrant");
 const ActionQueryBuilder = require("./ActionQueryBuilder");
 const GrantBuilder = require("./GrantBuilder");
 
@@ -61,9 +62,10 @@ class AccessControl {
     if (arguments.length !== 0 && role === undefined) {
       throw new Error("Invalid role(s): for grant");
     }
-    if (!this._grants[role]) this._grants[role] = {};
+    // if (!this._grants[role]) this._grants[role] = {};
 
-    return new GrantBuilder(this, role);
+    // return new GrantBuilder(this, role);
+    return new AccessGrant(this, role);
   }
 
   /**
