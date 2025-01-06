@@ -1,0 +1,309 @@
+{
+  "roles": [
+    {
+      "roleName": "Admin",
+      "description": "Superuser with full access across the entire system. Has the ability to manage users, configure system settings, and modify any resources.",
+      "permissions": [
+        {
+          "policyName": "FullControl",
+          "resources": ["*"],
+          "actions": [
+            "Create",
+            "Read",
+            "Update",
+            "Delete",
+            "AssignTasks",
+            "ManageUsers",
+            "ConfigureSettings"
+          ],
+          "scopes": ["Global", "Own", "Any"], 
+          "conditions": []
+        }
+      ],
+      "attributes": {
+        "level": "High",
+        "department": "IT",
+        "isSuperUser": true,
+        "resourceAccess": ["allResources"]
+      }
+    },
+    {
+      "roleName": "Manager",
+      "description": "Manages resources and team-related activities within the assigned department or team.",
+      "permissions": [
+        {
+          "policyName": "TeamManagement",
+          "resources": ["TeamProjects", "TeamReports", "TeamBudget"],
+          "actions": ["Create", "Read", "Update", "Delete", "AssignTasks"],
+          "scopes": ["Team", "Own"], // Multiple scopes
+          "conditions": [
+            {
+              "attribute": "department",
+              "operator": "equals",
+              "value": "Managed"
+            },
+            {
+              "attribute": "resourceOwner",
+              "operator": "equals",
+              "value": "Manager"
+            }
+          ]
+        }
+      ],
+      "attributes": {
+        "level": "Medium",
+        "department": "Operations",
+        "permissionsScope": "TeamLevel",
+        "resourceAccess": ["TeamProjects", "TeamReports", "TeamBudget"]
+      }
+    },
+    {
+      "roleName": "Employee",
+      "description": "An individual contributor responsible for assigned tasks and deliverables. Limited access based on assigned tasks.",
+      "permissions": [
+        {
+          "policyName": "TaskOperations",
+          "resources": ["AssignedTasks", "EmployeeDocuments"],
+          "actions": ["Read", "Update", "CompleteTasks", "SubmitFeedback"],
+          "scopes": ["Self", "Own"], // Multiple scopes
+          "conditions": [
+            {
+              "attribute": "taskAssigned",
+              "operator": "equals",
+              "value": "True"
+            },
+            {
+              "attribute": "taskStatus",
+              "operator": "not_equals",
+              "value": "Completed"
+            }
+          ]
+        }
+      ],
+      "attributes": {
+        "level": "Low",
+        "department": "Various",
+        "taskScope": "Self",
+        "resourceAccess": ["AssignedTasks", "EmployeeDocuments"]
+      }
+    },
+    {
+      "roleName": "Viewer",
+      "description": "Read-only access to global resources, including reports and knowledge base.",
+      "permissions": [
+        {
+          "policyName": "ReadOnly",
+          "resources": ["PublicReports", "KnowledgeBase"],
+          "actions": ["Read"],
+          "scopes": ["Global", "Any"], // Multiple scopes
+          "conditions": []
+        }
+      ],
+      "attributes": {
+        "level": "Low",
+        "department": "Various",
+        "permissionsScope": "ReadOnly",
+        "resourceAccess": ["PublicReports", "KnowledgeBase"]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "policyName": "FullControl",
+      "description": "Provides full, unrestricted access to all resources and actions across the system.",
+      "actions": [
+        "Create",
+        "Read",
+        "Update",
+        "Delete",
+        "AssignTasks",
+        "ManageUsers",
+        "ConfigureSettings"
+      ],
+      "resources": ["*"],
+      "conditions": [],
+      "scopes": ["Global", "Own", "Any"] // Multiple scopes
+    },
+    {
+      "policyName": "TeamManagement",
+      "description": "Allows managing resources specific to a team. Includes creating and modifying team-related projects, reports, and budgets.",
+      "actions": ["Create", "Read", "Update", "Delete", "AssignTasks"],
+      "resources": ["TeamProjects", "TeamReports", "TeamBudget"],
+      "conditions": [
+        {
+          "attribute": "resourceOwner",
+          "operator": "equals",
+          "value": "Manager"
+        },
+        {
+          "attribute": "department",
+          "operator": "equals",
+          "value": "Managed"
+        }
+      ],
+      "scopes": ["Team", "Own"] // Multiple scopes
+    },
+    {
+      "policyName": "TaskOperations",
+      "description": "Allows employees to manage their assigned tasks. Includes read, update, and completion functionalities.",
+      "actions": ["Read", "Update", "CompleteTasks", "SubmitFeedback"],
+      "resources": ["AssignedTasks"],
+      "conditions": [
+        {
+          "attribute": "taskAssigned",
+          "operator": "equals",
+          "value": "True"
+        },
+        {
+          "attribute": "taskStatus",
+          "operator": "not_equals",
+          "value": "Completed"
+        }
+      ],
+      "scopes": ["Self", "Own"] // Multiple scopes
+    },
+    {
+      "policyName": "ReadOnly",
+      "description": "Grants read-only access to selected resources such as public reports and knowledge base.",
+      "actions": ["Read"],
+      "resources": ["PublicReports", "KnowledgeBase"],
+      "conditions": [],
+      "scopes": ["Global", "Any"] // Multiple scopes
+    }
+  ],
+  "resources": [
+    {
+      "resourceName": "TeamProjects",
+      "description": "Projects that are managed by specific teams and departments.",
+      "attributes": {
+        "owner": "TeamManager",
+        "confidentiality": "Medium",
+        "visibility": "Internal",
+        "resourceType": "Project"
+      }
+    },
+    {
+      "resourceName": "AssignedTasks",
+      "description": "Tasks that are assigned to employees, with specific deadlines and priorities.",
+      "attributes": {
+        "assignedTo": "Employee",
+        "priority": "High",
+        "status": "Open",
+        "visibility": "Internal"
+      }
+    },
+    {
+      "resourceName": "KnowledgeBase",
+      "description": "A centralized knowledge repository containing organizational documents, articles, and FAQs.",
+      "attributes": {
+        "visibility": "Public",
+        "version": "Latest",
+        "resourceType": "Document"
+      }
+    }
+  ],
+  "scopes": [
+    {
+      "scopeName": "Global",
+      "description": "Applies to all users across the organization without restriction."
+    },
+    {
+      "scopeName": "Team",
+      "description": "Limits access to specific teams or departments within the organization."
+    },
+    {
+      "scopeName": "Self",
+      "description": "Limits access to the individual's resources or tasks only."
+    },
+    {
+      "scopeName": "Own",
+      "description": "Applies to the owner of the resource (e.g., the user or team managing a resource)."
+    },
+    {
+      "scopeName": "Any",
+      "description": "Applies to all resources or users without restriction, often used in shared contexts."
+    }
+  ],
+  "actions": [
+    {
+      "actionName": "Create",
+      "description": "Allows the creation of new resources or tasks."
+    },
+    {
+      "actionName": "Read",
+      "description": "Allows viewing of resource details without making modifications."
+    },
+    {
+      "actionName": "Update",
+      "description": "Allows modifying existing resources or tasks."
+    },
+    {
+      "actionName": "Delete",
+      "description": "Allows permanent removal of resources or tasks."
+    },
+    {
+      "actionName": "AssignTasks",
+      "description": "Allows assigning tasks to users or teams."
+    },
+    {
+      "actionName": "CompleteTasks",
+      "description": "Allows marking tasks as completed."
+    },
+    {
+      "actionName": "ManageUsers",
+      "description": "Allows management of user accounts and permissions."
+    },
+    {
+      "actionName": "ConfigureSettings",
+      "description": "Allows configuring system settings and configurations."
+    }
+  ],
+  "conditions": [
+    {
+      "attribute": "resourceOwner",
+      "operator": "equals",
+      "value": "TeamManager"
+    },
+    {
+      "attribute": "taskAssigned",
+      "operator": "equals",
+      "value": "True"
+    },
+    {
+      "attribute": "confidentiality",
+      "operator": "less_than",
+      "value": "High"
+    },
+    {
+      "attribute": "priority",
+      "operator": "greater_than_or_equals",
+      "value": "Medium"
+    }
+  ],
+  "attributes": [
+    {
+      "attributeName": "confidentiality",
+      "description": "Defines the sensitivity level of a resource.",
+      "dataType": "String",
+      "values": ["Low", "Medium", "High"]
+    },
+    {
+      "attributeName": "priority",
+      "description": "Indicates the priority level of a task or resource.",
+      "dataType": "String",
+      "values": ["Low", "Medium", "High"]
+    },
+    {
+      "attributeName": "resourceOwner",
+      "description": "The person or team who owns a particular resource.",
+      "dataType": "String",
+      "values": ["Manager", "TeamMember"]
+    },
+    {
+      "attributeName": "visibility",
+      "description": "Defines the visibility of a resource within the organization.",
+      "dataType": "String",
+      "values": ["Public", "Internal", "Private"]
+    }
+  ]
+}
